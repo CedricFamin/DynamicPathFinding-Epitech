@@ -1,8 +1,14 @@
+CMakeScripts
 CMakeCache.txt
 CMakeFiles
 Makefile
 cmake_install.cmake
 install_manifest.txt
+
+*.build
+*.xcodeproj
+
+bin
 
 # Compiled Object files
 *.slo

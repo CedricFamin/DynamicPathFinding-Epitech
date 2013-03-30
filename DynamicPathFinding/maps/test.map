@@ -1,0 +1,16 @@
+# define the map size
+size 100 100
+
+# define if it's a round world
+bounded 1
+
+# Define map name
+name test map vol1
+
+# define walls : min X Min Y Max X Max Y
+wall 10 47 53 49
+wall 64 18 65 80 
+
+# define Avatar : X Y X Y
+avatar 50 15 50 15
+goal 88 80
