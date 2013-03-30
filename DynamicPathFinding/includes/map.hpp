@@ -44,7 +44,7 @@ namespace M_AI_DynamicPathFinding
         static const std::string _MAP_DEFAULT_NAME; //< default map name
         
     public:
-        static const unsigned int _MAP_SCALE = 100; //< default unit size (in px)
+        static const unsigned int _MAP_SCALE = 150; //< default unit size (in px)
         static const unsigned int _MAP_STATICBLOCK = 1 << 0;
         static const unsigned int _MAP_DYNAMICBLOCK = 1 << 1;
         static const unsigned int _MAP_GOAL = 1 << 2;

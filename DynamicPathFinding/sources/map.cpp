@@ -58,7 +58,7 @@ void Map::AddWall(std::string& line)
     if (StripArgument(line, 5).empty() && !StripArgument(line, 4).empty())
     {
         // Get Coordinates
-        unsigned int minX, minY, maxX, maxY;
+        unsigned int minX = 0, minY = 0, maxX = 0, maxY = 0;
         ExtractObstacleCoord(line, &minX, &minY, &maxX, &maxY);
         
         // Creating wall object

@@ -20,7 +20,7 @@ int main(int ac, char **av)
     // Create the SFML window
     std::stringstream tmpStr;
     tmpStr << "Dynamic Path Finding :: " << labyrinth->GetMapName();
-    sf::RenderWindow app(sf::VideoMode(1024, 768, 32), tmpStr.str(), sf::Style::Titlebar | sf::Style::Close);
+    sf::RenderWindow app(sf::VideoMode(960, 640, 32), tmpStr.str(), sf::Style::Titlebar | sf::Style::Close);
     sf::Vector2f center(labyrinth->GetX() * Map::_MAP_SCALE / 2, labyrinth->GetY() * Map::_MAP_SCALE / 2);
     sf::Vector2f halfsize(labyrinth->GetX() * Map::_MAP_SCALE /2, labyrinth->GetY() * Map::_MAP_SCALE / 2);
     sf::View view(center, halfsize);

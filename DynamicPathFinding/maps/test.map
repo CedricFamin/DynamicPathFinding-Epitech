@@ -2,14 +2,16 @@
 size 100 100
 
 # define if it's a round world
-bounded 1
+bounded 0
 
 # Define map name
-name test map vol1
+name test map vol2
 
 # define walls : min X Min Y Max X Max Y
-wall 10 47 53 49
-wall 64 18 65 80 
+# wall that bound the map
+wall 1 60 50 60 
+
+wall 50 1 50 55 
 
 # define Avatar : X Y X Y
 avatar 50 15 50 15
