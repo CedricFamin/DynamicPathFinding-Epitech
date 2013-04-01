@@ -1,5 +1,7 @@
 #include "../includes/brain.hpp"
 
+#include "../includes/PathFind/GridBasedPathFinder.h"
+
 // ComputePath -----------------------------------------------------------
 void Brain::ComputePath()
 {
@@ -76,16 +78,10 @@ const void Brain::DrawDebug(sf::RenderWindow& app)
     this->_pathFinder->DrawDebug(app);
 }
 
-// CTOR ------------------------------------------------------------------
-struct GridBasedAdvancedProperty
-{
-    unsigned int dist;
-    float walkable;
-};
 
 Brain::Brain(Map* map)
 : Algo(map)
-, _pathFinder(new APathFinder<GridBasedAdvancedProperty>())
+, _pathFinder(new GridBasedPathFinder())
 {
     this->_pathFinder->Init(map);
 }

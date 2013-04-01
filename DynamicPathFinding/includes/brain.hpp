@@ -9,7 +9,7 @@
 // DynamicPathFinding Includes
 #include "algo.hpp"
 
-#include "IPathFinder.h"
+#include "PathFind/IPathFinder.h"
 
 using namespace M_AI_DynamicPathFinding;
 namespace M_AI_DynamicPathFinding
