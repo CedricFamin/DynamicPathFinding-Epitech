@@ -38,6 +38,7 @@ bool Avatar::Move(sf::Vector2f& vec)
     _minY += vec.y;
     _maxY += vec.y;
     _shape->Move(vec);
+    return true;
 }
 
 // Default ctor ----------------------------------------------------------

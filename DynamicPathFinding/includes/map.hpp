@@ -156,14 +156,14 @@ namespace M_AI_DynamicPathFinding
         /// Draw the whole Map
         const void Draw(sf::RenderWindow& app);
         
-        Avatar* GetAvatar(void);
+        Avatar* GetAvatar(void) const;
         
         /// Return state of the boundedByWalls
         const boost::tribool GetBounded(void);
         
-        unsigned int GetGoalX(void);
+        unsigned int GetGoalX(void) const;
         
-        unsigned int GetGoalY(void);
+        unsigned int GetGoalY(void) const;
         
         ///
         const unsigned int* GetMap(void) const;
@@ -172,10 +172,10 @@ namespace M_AI_DynamicPathFinding
         const std::string GetMapName(void);
         
         /// Get map's size in X
-        const unsigned int GetX(void);
+        const unsigned int GetX(void) const;
         
         /// Get map's size in Y
-        const unsigned int GetY(void);
+        const unsigned int GetY(void) const;
         
         /// Returns True if map is correctly setted
         const bool IsReady(void);

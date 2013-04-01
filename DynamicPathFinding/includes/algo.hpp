@@ -58,7 +58,9 @@ namespace M_AI_DynamicPathFinding
         Algo(Map* labyrinth);
         
         /// default dtor
-        ~Algo(void);
+        virtual ~Algo(void);
+        
+        virtual const void DrawDebug(sf::RenderWindow& app) = 0;
     };
 }
 

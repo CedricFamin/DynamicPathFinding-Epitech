@@ -6,6 +6,7 @@ const std::string Map::_MAP_DEFAULT_NAME = "Boring Clumsy Default Map Name :(";
 // AddDynamicObject --------------------------------------------------------
 bool Map::AddDynamicGeometry(Collidable* obj)
 {
+    return true;
 }
 
 // AddDoor -----------------------------------------------------------------
@@ -197,6 +198,7 @@ bool Map::LoadFile()
             return false;
         }
     }
+    return true;
 }
 
 // InitializeDictionnary ---------------------------------------------------
@@ -293,7 +295,7 @@ const void Map::Draw(sf::RenderWindow& app)
 }
 
 // GetAvatar ---------------------------------------------------------------
-Avatar* Map::GetAvatar()
+Avatar* Map::GetAvatar() const
 {
     return _avatar;
 }
@@ -317,13 +319,13 @@ const std::string Map::GetMapName()
 }
 
 // GetX --------------------------------------------------------------------
-const unsigned int Map::GetX()
+const unsigned int Map::GetX() const
 {
     return _sizeX;
 }
 
 // GetY --------------------------------------------------------------------
-const unsigned int Map::GetY()
+const unsigned int Map::GetY() const
 {
     return _sizeY;
 }
@@ -357,6 +359,7 @@ bool Map::SetAvatar(std::string& line)
     
     sf::Vector2f vec(minX, minY);
     SetAvatar(vec);
+    return true;
 }
 
 // SetAvatar ---------------------------------------------------------------
@@ -422,35 +425,35 @@ void Map::SetGoal(std::string& line)
 }
 
 
-unsigned int Map::GetGoalX()
+unsigned int Map::GetGoalX() const
 {
     return _goalX;
 }
 
-unsigned int Map::GetGoalY()
+unsigned int Map::GetGoalY() const
 {
     return _goalY;
 }
 // Default Ctor ------------------------------------------------------------
 Map::Map()
-: _avatar(NULL), 
-_boundedByWalls(2),
+: _boundedByWalls(2),
 _dictionnary(NULL),
 _isReady(false),
 _sizeX(0),
-_sizeY(0)
+_sizeY(0),
+_avatar(NULL)
 {
     this->_path = Map::_DEFAULT_MAP_PATH;
 }
 
 // File Ctor ---------------------------------------------------------------
 Map::Map(std::string& fileName)
-: _avatar(NULL),
-_boundedByWalls(2),
+: _boundedByWalls(2),
 _dictionnary(NULL),
 _isReady(false),
 _sizeX(0),
-_sizeY(0)
+_sizeY(0),
+_avatar(NULL)
 {
     if (fileName.empty())
     {

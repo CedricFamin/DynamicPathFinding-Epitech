@@ -66,7 +66,7 @@ int main(int ac, char **av)
                         zoom *= 1.2f;
                         view.Zoom(1.2f);
                         break;
-                    case sf::Key::Subtract:
+                    case sf::Key::Equal:
                         zoom *= 0.8f;
                         view.Zoom(0.8f);
                         break;
@@ -96,9 +96,12 @@ int main(int ac, char **av)
         app.Clear();
         
         algo->Update();
+        algo->DrawDebug(app);
+        
         
         // Draw the map
         labyrinth->Draw(app);
+        
         
         // Display Actual buffer
         app.Display();

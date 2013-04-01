@@ -3,6 +3,14 @@
 // ComputePath -----------------------------------------------------------
 void Brain::ComputePath()
 {
+    unsigned int avatarPositionX = 0;
+    unsigned int avatarPositionY = 0;
+    
+    this->_pathFinder->ClearPathAndDestination();
+    //this->_pathFinder->SetRoot(Algo::GetMap().GetAvatarX(), Algo::GetMap().GetAvatarY());
+    IPathFinder::DirectionList dir = this->_pathFinder->ComputePath();
+    Algo::Move(dir);
+    return ;
     // GetMap() to get a const reference to the map
     // You are encourage to create filters from this map but maybe not here ,,,
     Algo::GetMap();
@@ -63,13 +71,28 @@ void Brain::ComputePath()
     Algo::Move(movList);
 }
 
+const void Brain::DrawDebug(sf::RenderWindow& app)
+{
+    this->_pathFinder->DrawDebug(app);
+}
+
 // CTOR ------------------------------------------------------------------
+struct GridBasedAdvancedProperty
+{
+    unsigned int dist;
+    float walkable;
+};
+
 Brain::Brain(Map* map)
 : Algo(map)
+, _pathFinder(new APathFinder<GridBasedAdvancedProperty>())
 {
+    this->_pathFinder->Init(map);
 }
 
 // DTOR ------------------------------------------------------------------
 Brain::~Brain()
 {
+    this->_pathFinder->ClearPathAndDestination();
+    delete this->_pathFinder;
 }

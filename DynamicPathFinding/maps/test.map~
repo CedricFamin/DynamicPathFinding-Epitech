@@ -2,7 +2,7 @@
 size 100 100
 
 # define if it's a round world
-bounded 1
+bounded 0
 
 # Define map name
 name test map vol2
@@ -13,8 +13,6 @@ wall 1 60 50 60
 
 wall 50 1 50 55 
 
-wall 20 75 100 75 
-
 # define Avatar : X Y X Y
-avatar 10 10 10 10
-goal 80 80
+avatar 50 15 50 15
+goal 88 80

@@ -19,10 +19,12 @@ M_AI_DynamicPathFinding::DictionnaryNode_t* M_AI_DynamicPathFinding::AddWord(con
         current = CreateNode(word[i], current);
     // Set the word reference to the last node
     if (current->_wordReference != 0)
-        if (current->_wordReference = wordReference)
+    {
+        if ((current->_wordReference = wordReference))
             std::cerr << "/!\\ Warning : Word [" << word << "] was already setted" << std::endl;
         else
             std::cerr << "/!\\ Warning : Word [" << word << "] had reference [" << current->_wordReference << "] and now changed to [" << wordReference << "]" << std::endl;
+    }
     current->_wordReference = wordReference;
     
     return ret;
@@ -62,7 +64,7 @@ M_AI_DynamicPathFinding::DictionnaryNode_t* M_AI_DynamicPathFinding::CreateNode(
             for (unsigned int i = 0; i < 255; ++i) parent->_childNodes[i] = NULL;
         }
         // set to the existing node if applicable
-        ret = parent->_childNodes[c];
+        ret = parent->_childNodes[(unsigned int)c];
         // or create a new node and add it to the parent children list
         if (ret == NULL)
         {
@@ -70,7 +72,7 @@ M_AI_DynamicPathFinding::DictionnaryNode_t* M_AI_DynamicPathFinding::CreateNode(
             ret->_letter = c;
             ret->_wordReference = 0;
             ret->_childNodes = NULL;
-            parent->_childNodes[c] = ret;
+            parent->_childNodes[(unsigned int)c] = ret;
         }
     }
     return ret;
@@ -103,7 +105,7 @@ unsigned int M_AI_DynamicPathFinding::ParseWord(const M_AI_DynamicPathFinding::D
     
     current = const_cast<DictionnaryNode_t*>(root);
     for (i = 0; i < wordLen && current; ++i)
-        current = current->_childNodes[word[i]];
+        current = current->_childNodes[(unsigned int)word[i]];
     if (current && i == wordLen) ret = current->_wordReference;
     
     return ret;
@@ -128,8 +130,9 @@ std::string M_AI_DynamicPathFinding::StripArgument(std::string& line, unsigned i
             // Search for its end
             end = line.find_first_of(' ', begin);
             if (end == std::string::npos) end = line.find_first_of('\t', begin);
-            if (end != std::string::npos) {
-                end;
+            if (end != std::string::npos)
+            {
+                end;// WTF ? = line.size()-1;
             }
         }
         tmp = end;

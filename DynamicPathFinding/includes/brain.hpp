@@ -9,6 +9,8 @@
 // DynamicPathFinding Includes
 #include "algo.hpp"
 
+#include "IPathFinder.h"
+
 using namespace M_AI_DynamicPathFinding;
 namespace M_AI_DynamicPathFinding
 {
@@ -24,6 +26,11 @@ namespace M_AI_DynamicPathFinding
         
         /// default dtor
         ~Brain(void);
+        
+        virtual const void DrawDebug(sf::RenderWindow& app);
+        
+    private:
+        IPathFinder * _pathFinder;
     };
 }
 
