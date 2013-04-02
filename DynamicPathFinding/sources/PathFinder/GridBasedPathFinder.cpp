@@ -47,26 +47,26 @@ void GridBasedPathFinder::DrawDebug(sf::RenderWindow& app) const
      std::for_each(this->_edgeMap.begin(), this->_edgeMap.end(),
      [=, &app](std::pair<int, std::map<unsigned int, node_type*>> const & nodes)
      {
-     std::for_each(nodes.second.begin(), nodes.second.end(),
-     [=, &app](std::pair<int, node_type *> item)
-     {
-     node_type * node = item.second;
-     sf::Shape shape;
-     unsigned int minX = node->X() * Map::_MAP_SCALE;
-     unsigned int maxX = node->X() * Map::_MAP_SCALE + Map::_MAP_SCALE;
-     unsigned int minY = node->Y() * Map::_MAP_SCALE;
-     unsigned int maxY = node->Y() * Map::_MAP_SCALE + Map::_MAP_SCALE;
-     unsigned int color = (float)node->GetData().dist / (float)this->_maxDepth * 200;
-     
-     if (!node->GetData().walkable)
-     color = 255;
-     shape.AddPoint(sf::Vector2f(minX, minY), sf::Color(color, color, color));
-     shape.AddPoint(sf::Vector2f(minX, maxY), sf::Color(color, color, color));
-     shape.AddPoint(sf::Vector2f(maxX, maxY), sf::Color(color, color, color));
-     shape.AddPoint(sf::Vector2f(maxX, minY), sf::Color(color, color, color));
-     
-     app.Draw(shape);
-     });
+         std::for_each(nodes.second.begin(), nodes.second.end(),
+         [=, &app](std::pair<int, node_type *> item)
+         {
+             node_type * node = item.second;
+             sf::Shape shape;
+             unsigned int minX = node->X() * Map::_MAP_SCALE;
+             unsigned int maxX = node->X() * Map::_MAP_SCALE + Map::_MAP_SCALE;
+             unsigned int minY = node->Y() * Map::_MAP_SCALE;
+             unsigned int maxY = node->Y() * Map::_MAP_SCALE + Map::_MAP_SCALE;
+             unsigned int color = (float)node->GetData().dist / (float)this->_maxDepth * 200;
+             
+             if (!node->GetData().walkable)
+                 color = 255;
+             shape.AddPoint(sf::Vector2f(minX, minY), sf::Color(color, color, color));
+             shape.AddPoint(sf::Vector2f(minX, maxY), sf::Color(color, color, color));
+             shape.AddPoint(sf::Vector2f(maxX, maxY), sf::Color(color, color, color));
+             shape.AddPoint(sf::Vector2f(maxX, minY), sf::Color(color, color, color));
+             
+             app.Draw(shape);
+         });
      });
      */
     
@@ -88,9 +88,17 @@ void GridBasedPathFinder::DrawDebug(sf::RenderWindow& app) const
     }
 }
 
-GridBasedPathFinder::node_type * GridBasedPathFinder::CreateGraph(Map const * map, unsigned int x, unsigned int y, int dist, bool ignoreCollision)
+GridBasedPathFinder::node_type * GridBasedPathFinder::CreateGraph(Map const * map, int x,  int y, int dist, bool ignoreCollision)
 {
-    if (x >= map->GetX() || y >= map->GetY())
+    if (map->GetBounded() != boost::tribool::true_value)
+    {
+        if (x <= 0) x = map->GetX() - 1;
+        if (y <= 0) x = map->GetY() - 1;
+        if (x >= map->GetX()) x = 1;
+        if (y >= map->GetY()) y = 1;
+    }
+    
+    if ((x >= map->GetX() || y >= map->GetY() || x < 0 || y < 0))
     {
         return NULL;
     }
@@ -101,14 +109,22 @@ GridBasedPathFinder::node_type * GridBasedPathFinder::CreateGraph(Map const * ma
     }
     
     
-    
-    int goalX = map->GetGoalX() / Map::_MAP_SCALE;
-    int goalY = map->GetGoalY() / Map::_MAP_SCALE;
+    unsigned int computedDist = 0;
+    {
+        int goalX = map->GetGoalX() / Map::_MAP_SCALE;
+        int goalY = map->GetGoalY() / Map::_MAP_SCALE;
+        computedDist = abs(goalX - x) + abs(goalY - y);
+        if (map->GetBounded() != boost::tribool::true_value)
+        {
+            computedDist = std::min(computedDist, x + map->GetX() - goalX + y + map->GetY() - goalY);
+        }
+        computedDist *= 1;
+    }
     
     node_type* edge = new node_type();
     
     this->_edgeMap[x][y] = edge;
-    edge->GetData().dist = abs(goalX - (int)x) + abs(goalY - (int)y);
+    edge->GetData().dist = computedDist;
     edge->GetData().walkable = !map->GetMap()[x + y * map->GetX()] || ignoreCollision;
     this->_maxDepth = std::max(edge->GetData().dist, this->_maxDepth);
     
@@ -116,14 +132,21 @@ GridBasedPathFinder::node_type * GridBasedPathFinder::CreateGraph(Map const * ma
     edge->Y() = y;
     this->_nbNode++;
     
-    node_type * n1 = CreateGraph(map, x + 1, y, dist + 1);
-    if (n1) { edge->AddNode(n1); }
-    node_type * n2 = CreateGraph(map, x - 1, y, dist + 1);
-    if (n2) { edge->AddNode(n2); }
-    node_type * n3 = CreateGraph(map, x, y + 1, dist + 1);
-    if (n3) { edge->AddNode(n3); }
-    node_type * n4 = CreateGraph(map, x, y - 1, dist + 1);
-    if (n4) { edge->AddNode(n4); }
+    std::pair<int, int> moves[4] = {
+        std::make_pair( 1, 0),
+        std::make_pair(-1, 0),
+        std::make_pair( 0, 1),
+        std::make_pair( 0,-1)
+    };
+    
+    for (std::pair<int, int> & move : moves)
+    {
+        node_type * n = CreateGraph(map, x + move.first, y + move.second, dist + 1);
+        if (n) {
+            edge->AddNode(n);
+            //edge->GetData().dist += !n->GetData().walkable;
+        }
+    }
     
     return edge;
 }

@@ -8,12 +8,14 @@ bounded 1
 name test map vol2
 
 # define walls : min X Min Y Max X Max Y
-# wall that bound the map
+
 wall 1 60 50 60 
 
 wall 50 1 50 55 
 
-wall 20 75 100 75 
+wall 20 75 100 75
+
+wall 66 75 66 98
 
 # define Avatar : X Y X Y
 avatar 10 10 10 10

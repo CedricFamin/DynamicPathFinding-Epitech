@@ -301,7 +301,7 @@ Avatar* Map::GetAvatar() const
 }
 
 // GetBounded --------------------------------------------------------------
-const boost::tribool Map::GetBounded()
+const boost::tribool Map::GetBounded() const
 {
     return this->_boundedByWalls;
 }

@@ -44,7 +44,7 @@ private:
     unsigned int _maxDepth;
     unsigned int _nbNode;
     // Creation du graph grid based
-    node_type * CreateGraph(Map const * map, unsigned int x, unsigned int y, int dist, bool ignoreCollision = false);
+    node_type * CreateGraph(Map const * map, int x, int y, int dist, bool ignoreCollision = false);
 };
 
 #endif

@@ -159,7 +159,7 @@ namespace M_AI_DynamicPathFinding
         Avatar* GetAvatar(void) const;
         
         /// Return state of the boundedByWalls
-        const boost::tribool GetBounded(void);
+        const boost::tribool GetBounded(void) const;
         
         unsigned int GetGoalX(void) const;
         
