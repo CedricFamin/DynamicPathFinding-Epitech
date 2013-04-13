@@ -27,7 +27,7 @@ int main(int ac, char **av)
     float zoom = 1.0f;
     view.Zoom(1.0f);
     app.SetView(view);
-    
+    std::cout << "Init brain" << std::endl;
     Algo* algo = new Brain(labyrinth);
     
     bool turbo = false;
@@ -98,11 +98,10 @@ int main(int ac, char **av)
         algo->Update();
         algo->DrawDebug(app);
         
-        
         // Draw the map
         labyrinth->Draw(app);
         
-        
+ 
         // Display Actual buffer
         app.Display();
     }

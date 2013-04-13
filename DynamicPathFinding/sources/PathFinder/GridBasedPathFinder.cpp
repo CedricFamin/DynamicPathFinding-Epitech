@@ -6,7 +6,7 @@
 //
 //
 
-#include "../../includes/PathFind/GridBasedPathFinder.h"
+#include "../../includes/PathFinder/GridBasedPathFinder.h"
 
 GridBasedPathFinder::GridBasedPathFinder()
 {
@@ -26,6 +26,7 @@ void GridBasedPathFinder::Init(Map const * map)
     this->_maxDepth = 0;
     // Creation du graph.
     // On part de l'avatar vers le goal
+    this->_edgeMap.Init(map->GetX(), map->GetY());
     CreateGraph(map, goalX / Map::_MAP_SCALE, goalY / Map::_MAP_SCALE, 0, true);
     
     this->_avatar = map->GetAvatar();
@@ -88,66 +89,92 @@ void GridBasedPathFinder::DrawDebug(sf::RenderWindow& app) const
     }
 }
 
-GridBasedPathFinder::node_type * GridBasedPathFinder::CreateGraph(Map const * map, int x,  int y, int dist, bool ignoreCollision)
+GridBasedPathFinder::node_type * GridBasedPathFinder::CreateGraph(Map const * map, int parX,  int parY, int dist, bool ignoreCollision)
 {
-    if (map->GetBounded() != boost::tribool::true_value)
+    struct Params
     {
-        if (x <= 0) x = map->GetX() - 1;
-        if (y <= 0) x = map->GetY() - 1;
-        if (x >= map->GetX()) x = 1;
-        if (y >= map->GetY()) y = 1;
-    }
-    
-    if ((x >= map->GetX() || y >= map->GetY() || x < 0 || y < 0))
-    {
-        return NULL;
-    }
-    
-    if (this->_edgeMap.find(x) != this->_edgeMap.end() && this->_edgeMap[x].find(y) != this->_edgeMap[x].end())
-    {
-        return this->_edgeMap[x][y];
-    }
-    
-    
-    unsigned int computedDist = 0;
-    {
-        int goalX = map->GetGoalX() / Map::_MAP_SCALE;
-        int goalY = map->GetGoalY() / Map::_MAP_SCALE;
-        computedDist = abs(goalX - x) + abs(goalY - y);
-        if (map->GetBounded() != boost::tribool::true_value)
+        Params(int px, int py, node_type * _parent = 0)
         {
-            computedDist = std::min(computedDist, x + map->GetX() - goalX + y + map->GetY() - goalY);
+            x = px;
+            y = py;
+            parent = _parent;
         }
-        computedDist *= 1;
-    }
-    
-    node_type* edge = new node_type();
-    
-    this->_edgeMap[x][y] = edge;
-    edge->GetData().dist = computedDist;
-    edge->GetData().walkable = !map->GetMap()[x + y * map->GetX()] || ignoreCollision;
-    this->_maxDepth = std::max(edge->GetData().dist, this->_maxDepth);
-    
-    edge->X() = x;
-    edge->Y() = y;
-    this->_nbNode++;
-    
-    std::pair<int, int> moves[4] = {
-        std::make_pair( 1, 0),
-        std::make_pair(-1, 0),
-        std::make_pair( 0, 1),
-        std::make_pair( 0,-1)
+        int x;
+        int y;
+        node_type * parent;
+        
     };
     
-    for (std::pair<int, int> & move : moves)
+    std::list<Params> stackParam;
+    stackParam.push_back(Params(parX, parY));
+    
+    while (stackParam.size())
     {
-        node_type * n = CreateGraph(map, x + move.first, y + move.second, dist + 1);
-        if (n) {
-            edge->AddNode(n);
-            //edge->GetData().dist += !n->GetData().walkable;
+        int x = stackParam.front().x;
+        int y = stackParam.front().y;
+        Params params = stackParam.front();
+        stackParam.pop_front();
+        
+        if (map->GetBounded() != boost::tribool::true_value)
+        {
+            if (x <= 0) x = map->GetX() - 1;
+            if (y <= 0) x = map->GetY() - 1;
+            if (x >= map->GetX()) x = 1;
+            if (y >= map->GetY()) y = 1;
         }
+        
+        if ((x >= map->GetX() || y >= map->GetY() || x < 0 || y < 0))
+        {
+            continue;
+        }
+        
+        if (this->_edgeMap[y][x] != 0)
+        {
+            if (params.parent)
+                params.parent->AddNode(this->_edgeMap[y][x]);
+            continue;
+        }
+        
+        
+        unsigned int computedDist = 0;
+        {
+            int goalX = map->GetGoalX() / Map::_MAP_SCALE;
+            int goalY = map->GetGoalY() / Map::_MAP_SCALE;
+            computedDist = abs(goalX - x) + abs(goalY - y);
+            if (map->GetBounded() != boost::tribool::true_value)
+            {
+                computedDist = std::min(computedDist, x + map->GetX() - goalX + y + map->GetY() - goalY);
+            }
+            computedDist *= 1;
+        }
+        
+        node_type* edge = new node_type();
+        if (params.parent)
+            params.parent->AddNode(edge);
+        this->_edgeMap[y][x] = edge;
+        edge->GetData().dist = computedDist;
+        edge->GetData().walkable = !map->GetMap()[x + y * map->GetX()] || ignoreCollision;
+        this->_maxDepth = std::max(edge->GetData().dist, this->_maxDepth);
+        
+        edge->X() = x;
+        edge->Y() = y;
+        this->_nbNode++;
+        
+        std::pair<int, int> moves[4] = {
+            std::make_pair( 1, 0),
+            std::make_pair(-1, 0),
+            std::make_pair( 0, 1),
+            std::make_pair( 0,-1)
+        };
+        
+        for (std::pair<int, int> & move : moves)
+        {
+            Params param(x + move.first, y + move.second, edge);
+            stackParam.push_back(param);
+        }
+        ignoreCollision = false;
     }
     
-    return edge;
+    return NULL;
 }
 

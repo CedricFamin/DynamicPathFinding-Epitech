@@ -1,6 +1,9 @@
 #include "../includes/brain.hpp"
 
-#include "../includes/PathFind/GridBasedPathFinder.h"
+#include "../includes/PathFinder/GridBasedPathFinder.h"
+#include "../includes/PathFinder/NavigationMeshPathFinder.h"
+#include "../includes/PathFinder/VectorFieldHistogramPathFinder.h"
+
 
 // ComputePath -----------------------------------------------------------
 void Brain::ComputePath()
@@ -81,7 +84,7 @@ const void Brain::DrawDebug(sf::RenderWindow& app)
 
 Brain::Brain(Map* map)
 : Algo(map)
-, _pathFinder(new GridBasedPathFinder())
+, _pathFinder(new VectorFieldHistogramPathFinder())
 {
     this->_pathFinder->Init(map);
 }

@@ -49,16 +49,38 @@ template<typename Data, typename NodeComparator>
 class APathFinder : public IPathFinder
 {
 public:
-    
     typedef Data data_type;
     typedef Node<data_type> node_type;
-    typedef std::map<unsigned int, std::map<unsigned int, node_type*> > EdgeMap;
     typedef std::priority_queue<node_type*, std::vector<node_type*>, NodeComparator> OpenList;
     typedef std::set<node_type*> ClosedList;
     typedef Avatar::Direction Direction;
     typedef std::list<Direction> DirectionList;
     typedef std::list<node_type*> NodeList;
     
+    struct EdgeMap
+    {
+        void Init(unsigned int width, unsigned int height)
+        {
+            this->_width = width;
+            this->_height = height;
+            this->_container = new node_type*[width * height];
+            for (unsigned int i = 0; i < width * height; ++i)
+            {
+                this->_container[i] = 0;
+            }
+        }
+        
+        node_type ** operator[](unsigned int y)
+        {
+            return _container + y * this->_width;
+        }
+    private:
+        
+        unsigned int _width;
+        unsigned int _height;
+        
+        node_type **  _container;
+    };
     
     APathFinder() { }
     virtual ~APathFinder() { }
@@ -75,7 +97,7 @@ public:
         
         unsigned int avatarX = this->_avatar->GetPosition().x / Map::_MAP_SCALE;
         unsigned int avatarY = this->_avatar->GetPosition().y / Map::_MAP_SCALE;
-        this->_root = this->_edgeMap.find(avatarX)->second.find(avatarY)->second;
+        this->_root = this->_edgeMap[avatarY][avatarX];
         openList.push(this->_root);
         this->_root->Open(true);
         
@@ -122,7 +144,7 @@ public:
         {
             currentNode->Open(false);
             currentNode->Close(false);
-            std::cout << "Current Node: Dist = " << currentNode->GetData().dist << std::endl
+            std::cout << "Current Node: Dist = " << this->EvalNode(currentNode) << std::endl
             << "Position : (" << currentNode->X() << ", " << currentNode->Y() << ")" << std::endl
             << "OpenList: " << openList.size() << " ClosedList: " << closedList.size() << std::endl;
         }

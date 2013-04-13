@@ -9,13 +9,19 @@ name test map vol2
 
 # define walls : min X Min Y Max X Max Y
 
-wall 1 60 50 60 
+wall 1 60 90 60 
 
 wall 50 1 50 55 
 
 wall 20 75 100 75
 
 wall 66 75 66 98
+
+wall 80 50 95 50
+
+wall 88 45 88 60
+
+wall 95 60 95 60
 
 # define Avatar : X Y X Y
 avatar 10 10 10 10
