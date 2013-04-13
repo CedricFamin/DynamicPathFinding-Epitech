@@ -31,6 +31,7 @@ int main(int ac, char **av)
     Algo* algo = new Brain(labyrinth);
     
     bool turbo = false;
+    bool pause = false;
     // While SFML application is on...
     while (app.IsOpened())
     {
@@ -74,6 +75,9 @@ int main(int ac, char **av)
                     case sf::Key::RShift:
                         turbo = true;
                         break;
+                    case sf::Key::Comma:
+                        pause = !pause;
+                        break;
                     default:
                         break;
                 }
@@ -94,8 +98,11 @@ int main(int ac, char **av)
         
         // Clear window
         app.Clear();
+        if (!pause)
+        {
+            algo->Update();
+        }
         
-        algo->Update();
         algo->DrawDebug(app);
         
         // Draw the map

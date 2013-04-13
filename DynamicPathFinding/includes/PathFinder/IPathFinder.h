@@ -23,8 +23,8 @@ using namespace M_AI_DynamicPathFinding;
 
 struct Position
 {
-    unsigned int x;
-    unsigned int y;
+    int x;
+    int y;
 };
 
 

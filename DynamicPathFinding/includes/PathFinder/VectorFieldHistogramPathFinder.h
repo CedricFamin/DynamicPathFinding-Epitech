@@ -18,7 +18,7 @@ class VectorFieldHistogramPathFinder : public IPathFinder
     
     static unsigned int const ACTIVE_WINDOW_RADIUS = 5;
     static unsigned int const POLAR_HISTOGRAM_STEP = 45;
-    static unsigned int const POLAR_RANGE = 360 / POLAR_HISTOGRAM_STEP;
+    static unsigned int const POLAR_RANGE = 360 / POLAR_HISTOGRAM_STEP - 1;
 public:
     
     VectorFieldHistogramPathFinder();
