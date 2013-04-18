@@ -170,7 +170,6 @@ void NavigationMeshPathFinder::DrawDebug(sf::RenderWindow& app) const
     {
         j = (j + 1);
         sf::Shape shape = sf::Shape();
-        unsigned int color = 0;
         for (int i = 0; i <= 2; ++i)
         {
             auto vertex = face->vertex(i);

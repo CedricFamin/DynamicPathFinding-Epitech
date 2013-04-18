@@ -3,6 +3,7 @@
 #include "../includes/PathFinder/GridBasedPathFinder.h"
 #include "../includes/PathFinder/NavigationMeshPathFinder.h"
 #include "../includes/PathFinder/VectorFieldHistogramPathFinder.h"
+#include "../includes/PathFinder/RandomWaypointPathFinder.h"
 
 
 // ComputePath -----------------------------------------------------------
@@ -14,6 +15,12 @@ void Brain::ComputePath()
     this->_pathFinder->ClearPathAndDestination();
     //this->_pathFinder->SetRoot(Algo::GetMap().GetAvatarX(), Algo::GetMap().GetAvatarY());
     IPathFinder::DirectionList dir = this->_pathFinder->ComputePath();
+    // Hack bidon car je suis pas sur d'avoir le droit de passer des methode en public
+    if (dir.size() == 2 && !Algo::CheckMovement(dir.front()))
+    {
+        dir.push_back(dir.front());
+        dir.pop_front();
+    }
     Algo::Move(dir);
     return ;
     // GetMap() to get a const reference to the map
@@ -84,7 +91,7 @@ const void Brain::DrawDebug(sf::RenderWindow& app)
 
 Brain::Brain(Map* map)
 : Algo(map)
-, _pathFinder(new VectorFieldHistogramPathFinder())
+, _pathFinder(new RandomWaypointPathFinder())
 {
     this->_pathFinder->Init(map);
 }

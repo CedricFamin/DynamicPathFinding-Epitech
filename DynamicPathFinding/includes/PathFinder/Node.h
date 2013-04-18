@@ -27,10 +27,10 @@ public:
     data_type & GetData() { return _data; }
     
     
-    unsigned int X() const { return _x; }
-    unsigned int Y() const { return _y; }
-    unsigned int & X() { return _x; }
-    unsigned int & Y() { return _y; }
+    int X() const { return _x; }
+    int Y() const { return _y; }
+    int & X() { return _x; }
+    int & Y() { return _y; }
     
     bool Closed() const { return _closed; }
     void Close(bool value) { _closed = value; }
@@ -55,9 +55,9 @@ public:
 private:
     std::list<Node<data_type>*> _edges;
     Data _data;
-    unsigned int _x;
-    unsigned int _y;
-    unsigned int _depth;
+    int _x;
+    int _y;
+    int _depth;
     bool _closed;
     bool _opened;
     

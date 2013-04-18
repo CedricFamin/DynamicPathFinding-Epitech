@@ -34,6 +34,8 @@ public:
     ~GridBasedPathFinder();
     
     virtual void Init(Map const * map);
+    virtual DirectionList ComputePath();
+
     
 protected:
     virtual unsigned int EvalNode(node_type* node) const;

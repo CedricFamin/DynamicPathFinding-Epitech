@@ -32,6 +32,8 @@ int main(int ac, char **av)
     
     bool turbo = false;
     bool pause = false;
+    bool pasApas = false;
+    bool active = false;
     // While SFML application is on...
     while (app.IsOpened())
     {
@@ -78,6 +80,12 @@ int main(int ac, char **av)
                     case sf::Key::Comma:
                         pause = !pause;
                         break;
+                    case sf::Key::Back:
+                        pasApas = !pasApas;
+                        break;
+                    case sf::Key::Space:
+                        active = true;
+                        break;
                     default:
                         break;
                 }
@@ -100,7 +108,11 @@ int main(int ac, char **av)
         app.Clear();
         if (!pause)
         {
-            algo->Update();
+            if (!pasApas || active)
+            {
+                algo->Update();
+                active = false;
+            }
         }
         
         algo->DrawDebug(app);

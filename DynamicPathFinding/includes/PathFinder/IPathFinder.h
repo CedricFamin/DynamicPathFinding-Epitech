@@ -74,6 +74,14 @@ public:
         {
             return _container + y * this->_width;
         }
+        
+        node_type ** operator[](unsigned int y) const
+        {
+            return _container + y * this->_width;
+        }
+        
+        unsigned int height() const { return this->_height; }
+        unsigned int width() const  { return this->_width; }
     private:
         
         unsigned int _width;
@@ -98,6 +106,9 @@ public:
         unsigned int avatarX = this->_avatar->GetPosition().x / Map::_MAP_SCALE;
         unsigned int avatarY = this->_avatar->GetPosition().y / Map::_MAP_SCALE;
         this->_root = this->_edgeMap[avatarY][avatarX];
+        if (!this->_root)
+            return directions;
+        
         openList.push(this->_root);
         this->_root->Open(true);
         

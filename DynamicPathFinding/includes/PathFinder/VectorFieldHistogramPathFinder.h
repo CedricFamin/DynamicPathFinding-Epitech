@@ -16,9 +16,9 @@ class VectorFieldHistogramPathFinder : public IPathFinder
     typedef Avatar::Direction Direction;
     typedef std::list<Direction> DirectionList;
     
-    static unsigned int const ACTIVE_WINDOW_RADIUS = 5;
-    static unsigned int const POLAR_HISTOGRAM_STEP = 45;
-    static unsigned int const POLAR_RANGE = 360 / POLAR_HISTOGRAM_STEP - 1;
+    static int const ACTIVE_WINDOW_RADIUS = 10;
+    static int const POLAR_HISTOGRAM_STEP = 24;
+    static int const POLAR_RANGE = 360 / POLAR_HISTOGRAM_STEP;
 public:
     
     VectorFieldHistogramPathFinder();
@@ -28,6 +28,7 @@ public:
     virtual DirectionList ComputePath();
     virtual void ClearPathAndDestination();
     virtual void DrawDebug(sf::RenderWindow& app) const;
+    void SetGoal(unsigned int goalX, unsigned int goalY);
 
 private:
     unsigned int _width;
@@ -42,6 +43,8 @@ private:
     bool **_alreadyTakingPath;
     
     unsigned int _polarResult[POLAR_RANGE];
+    unsigned int _lastDirection;
+    std::vector<sf::Vector2f> _visited;
 };
 
 #endif

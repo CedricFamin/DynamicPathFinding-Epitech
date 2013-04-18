@@ -33,6 +33,19 @@ void VectorFieldHistogramPathFinder::Init(Map const * map)
         _alreadyTakingPath[i] = new bool[POLAR_RANGE];
 }
 
+
+void VectorFieldHistogramPathFinder::SetGoal(unsigned int goalX, unsigned int goalY)
+{
+    _goalX = goalX;
+    _goalY = goalY;
+    
+    for (unsigned int i = 0; i < this->_width * this->_height; ++i)
+    {
+        for (unsigned int j = 0; j < POLAR_RANGE; ++j)
+            _alreadyTakingPath[i][j] = false;
+    }
+}
+
 VectorFieldHistogramPathFinder::DirectionList VectorFieldHistogramPathFinder::ComputePath()
 {
     DirectionList dirs;
@@ -43,9 +56,10 @@ VectorFieldHistogramPathFinder::DirectionList VectorFieldHistogramPathFinder::Co
     // De la on choisi une direction parmis les "trous" dans l'histogram
     static float const PI = 3.14f;
     
+    this->_visited.push_back(this->_avatar->GetPosition());
     unsigned int avatarX = this->_avatar->GetPosition().x / Map::_MAP_SCALE;
     unsigned int avatarY = this->_avatar->GetPosition().y / Map::_MAP_SCALE;
-    unsigned int targetDirection = 0;
+    int targetDirection = 0;
     {
         Position vectorPT = {_goalX - avatarX, _goalY - avatarY};
         if (abs(vectorPT.x) <= 1 && abs(vectorPT.y) <= 1)
@@ -53,7 +67,10 @@ VectorFieldHistogramPathFinder::DirectionList VectorFieldHistogramPathFinder::Co
         
         double angle = atan2(vectorPT.y, vectorPT.x);
         targetDirection = 180.0 * angle / 3.14;
-        targetDirection /= POLAR_HISTOGRAM_STEP;
+        targetDirection = targetDirection / POLAR_HISTOGRAM_STEP + (targetDirection % POLAR_HISTOGRAM_STEP > POLAR_HISTOGRAM_STEP / 2);
+        
+        if (targetDirection < 0)
+            targetDirection += POLAR_RANGE;
     }
     
     for (unsigned int euleurAngle = 0; euleurAngle <= 360; euleurAngle += POLAR_HISTOGRAM_STEP)
@@ -78,12 +95,13 @@ VectorFieldHistogramPathFinder::DirectionList VectorFieldHistogramPathFinder::Co
     // Convert target direction in
     int direction = targetDirection;
     unsigned int takingIndex = avatarX + avatarY * this->_width;
+    unsigned int distToGoal = abs(avatarX - this->_goalX) + abs(avatarY - this->_goalY);
     
-    for (unsigned int i = 0; i < POLAR_RANGE / 2; ++i)
+    for (unsigned int i = 0; i <= POLAR_RANGE / 2; ++i)
     {
         direction = (targetDirection + i) % POLAR_RANGE;
         
-        if (!this->_alreadyTakingPath[takingIndex][direction] && _polarResult[direction] == 0)
+        if (!this->_alreadyTakingPath[takingIndex][direction] && (!_polarResult[direction] || _polarResult[direction] > distToGoal))
             break;
         
         // On tourne a 360
@@ -91,32 +109,31 @@ VectorFieldHistogramPathFinder::DirectionList VectorFieldHistogramPathFinder::Co
         if (direction < 0) direction += POLAR_RANGE;
         
         // On remet la direction dans la range [0; POLAR_RANGE]
-        if (!this->_alreadyTakingPath[takingIndex][direction] && _polarResult[direction] == 0)
+        if (!this->_alreadyTakingPath[takingIndex][direction] && (!_polarResult[direction] || _polarResult[direction] > distToGoal))
             break;
-    }
-    if (direction == POLAR_RANGE / 2)
-    {
-        int i = 0; // ici c'est la merde, on a pas trouve de direction ...
     }
     
     // convert direction index into avatar direction
+    this->_lastDirection = direction;
     this->_alreadyTakingPath[takingIndex][direction] = true;
     direction *= POLAR_HISTOGRAM_STEP;
     
     // monkey conversion pas belle
-    double cosDir = cos(direction), sinDir = sin(direction);
-    if ((cosDir * cosDir) > (sinDir * sinDir))
+    double cosDir = cos(direction * PI / 180.0f), sinDir = sin(direction * PI / 180.0f);
+    
+    if (cosDir)
     {
         if (cosDir > 0)
             dirs.push_back(Avatar::RIGHT);
         else
             dirs.push_back(Avatar::LEFT);
     }
-    else
+    
+    if (sinDir)
     {
         if (sinDir > 0)
             dirs.push_back(Avatar::DOWN);
-        else 
+        else
             dirs.push_back(Avatar::UP);
     }
     return dirs;
@@ -133,7 +150,7 @@ void VectorFieldHistogramPathFinder::DrawDebug(sf::RenderWindow& app) const
     static unsigned int const y = 10 * Map::_MAP_SCALE;
     static unsigned int const stepX = 500;
     static unsigned int const textSize = 250;
-    static unsigned int const baseBarHeightMax = 1400;
+    static unsigned int const baseBarHeightMax = 1200;
     {
         sf::String angleTxt("Angle");
         angleTxt.SetPosition(x, y);
@@ -146,8 +163,8 @@ void VectorFieldHistogramPathFinder::DrawDebug(sf::RenderWindow& app) const
         unsigned int corners[4][2] =
         {
             {x -   50, y +  300},
-            {x + 5000, y +  350},
-            {x + 4950, y - 1500},
+            {x + 8500, y +  350},
+            {x + 8450, y - 1500},
             {x -    0, y - 1450}
         };
         
@@ -161,19 +178,8 @@ void VectorFieldHistogramPathFinder::DrawDebug(sf::RenderWindow& app) const
     }
     
     {
-        unsigned int targetDirection = 0;
-        {
-            unsigned int avatarX = this->_avatar->GetPosition().x / Map::_MAP_SCALE;
-            unsigned int avatarY = this->_avatar->GetPosition().y / Map::_MAP_SCALE;
-            Position vectorPT = {_goalX - avatarX, _goalY - avatarY};
-            
-            double angle = atan2(vectorPT.y, vectorPT.x);
-            targetDirection = 180.0 * angle / 3.14;
-            targetDirection /= POLAR_HISTOGRAM_STEP;
-            
-        }
         std::stringstream str;
-        str << targetDirection;
+        str << this->_lastDirection;
         sf::String angleTxt("Angle avec le but : " + str.str());
         angleTxt.SetPosition(x + 500, y + 700);
         angleTxt.SetSize(textSize);
@@ -181,7 +187,7 @@ void VectorFieldHistogramPathFinder::DrawDebug(sf::RenderWindow& app) const
         app.Draw(angleTxt);
     }
     
-    for (unsigned int i = 0; i <= POLAR_RANGE; ++i)
+    for (unsigned int i = 0; i < POLAR_RANGE; ++i)
     {
         unsigned int baseX = x + 700 + i * stepX;
         unsigned int baseY = y;

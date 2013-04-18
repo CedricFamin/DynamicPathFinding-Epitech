@@ -44,32 +44,6 @@ unsigned int GridBasedPathFinder::EvalNode(node_type* node) const
 
 void GridBasedPathFinder::DrawDebug(sf::RenderWindow& app) const
 {
-    /*
-     std::for_each(this->_edgeMap.begin(), this->_edgeMap.end(),
-     [=, &app](std::pair<int, std::map<unsigned int, node_type*>> const & nodes)
-     {
-         std::for_each(nodes.second.begin(), nodes.second.end(),
-         [=, &app](std::pair<int, node_type *> item)
-         {
-             node_type * node = item.second;
-             sf::Shape shape;
-             unsigned int minX = node->X() * Map::_MAP_SCALE;
-             unsigned int maxX = node->X() * Map::_MAP_SCALE + Map::_MAP_SCALE;
-             unsigned int minY = node->Y() * Map::_MAP_SCALE;
-             unsigned int maxY = node->Y() * Map::_MAP_SCALE + Map::_MAP_SCALE;
-             unsigned int color = (float)node->GetData().dist / (float)this->_maxDepth * 200;
-             
-             if (!node->GetData().walkable)
-                 color = 255;
-             shape.AddPoint(sf::Vector2f(minX, minY), sf::Color(color, color, color));
-             shape.AddPoint(sf::Vector2f(minX, maxY), sf::Color(color, color, color));
-             shape.AddPoint(sf::Vector2f(maxX, maxY), sf::Color(color, color, color));
-             shape.AddPoint(sf::Vector2f(maxX, minY), sf::Color(color, color, color));
-             
-             app.Draw(shape);
-         });
-     });
-     */
     
     for (node_type * node : _debugPath)
     {
@@ -176,5 +150,110 @@ GridBasedPathFinder::node_type * GridBasedPathFinder::CreateGraph(Map const * ma
     }
     
     return NULL;
+}
+
+GridBasedPathFinder::DirectionList GridBasedPathFinder::ComputePath()
+{
+    
+    _debugPath.clear();
+    
+    DirectionList directions;
+    OpenList openList;
+    ClosedList closedList;
+    node_type* currentNode = 0;
+    
+    unsigned int avatarX = this->_avatar->GetPosition().x / Map::_MAP_SCALE;
+    unsigned int avatarY = this->_avatar->GetPosition().y / Map::_MAP_SCALE;
+    this->_root = this->_edgeMap[avatarY][avatarX];
+    if (!this->_root)
+        return directions;
+    
+    openList.push(this->_root);
+    this->_root->Open(true);
+    
+    while (!openList.empty())
+    {
+        currentNode = openList.top();
+        openList.pop();
+        currentNode->Close(true);
+        currentNode->Open(false);
+        closedList.insert(currentNode);
+        
+        if (this->EvalNode(currentNode) == currentNode->GetDepth())
+            break;
+        
+        for (node_type * node : currentNode->Edges())
+        {
+            if (!node->GetData().walkable && !node->Closed())
+            {
+                node->Close(true);
+                closedList.insert(node);
+            }
+            
+            if (!node->Closed() && !node->Opened())
+            {
+                node->SetParent(currentNode);
+                node->SetDepth(currentNode->GetDepth() + 1);
+                openList.push(node);
+                node->Open(true);
+            }
+            
+            if (node->Closed() && node->GetDepth() > currentNode->GetDepth() + 1)
+            {
+                node->Close(false);
+                node->Open(true);
+                node->SetParent(currentNode);
+                closedList.erase(node);
+                openList.push(node);
+            }
+        }
+        
+        currentNode = 0;
+    }
+    if (currentNode)
+    {
+        currentNode->Open(false);
+        currentNode->Close(false);
+        std::cout << "Current Node: Dist = " << this->EvalNode(currentNode) << std::endl
+        << "Position : (" << currentNode->X() << ", " << currentNode->Y() << ")" << std::endl
+        << "OpenList: " << openList.size() << " ClosedList: " << closedList.size() << std::endl;
+    }
+    
+    while (currentNode && currentNode->GetParent())
+    {
+        Direction dir;
+        node_type* parent = currentNode->GetParent();
+        _debugPath.push_back(currentNode);
+        if (currentNode->X() > parent->X())
+            dir = Avatar::RIGHT;
+        if (currentNode->X() < parent->X())
+            dir = Avatar::LEFT;
+        if (currentNode->Y() > parent->Y())
+            dir = Avatar::DOWN;
+        if (currentNode->Y() < parent->Y())
+            dir = Avatar::UP;
+        
+        directions.push_front(dir);
+        
+        currentNode = parent;
+        if (directions.size() > closedList.size() + openList.size())
+        {
+            std::cout << "Erreur durant le path finding" << std::endl;
+            break;
+        }
+    }
+    
+    for (node_type * node : closedList)
+    {
+        node->Reinit();
+    }
+    
+    while (openList.size() > 0)
+    {
+        openList.top()->Reinit();
+        openList.pop();
+    }
+    
+    return directions;
 }
 
