@@ -9,9 +9,6 @@
 // ComputePath -----------------------------------------------------------
 void Brain::ComputePath()
 {
-    unsigned int avatarPositionX = 0;
-    unsigned int avatarPositionY = 0;
-    
     this->_pathFinder->ClearPathAndDestination();
     //this->_pathFinder->SetRoot(Algo::GetMap().GetAvatarX(), Algo::GetMap().GetAvatarY());
     IPathFinder::DirectionList dir = this->_pathFinder->ComputePath();
@@ -92,6 +89,8 @@ const void Brain::DrawDebug(sf::RenderWindow& app)
 Brain::Brain(Map* map)
 : Algo(map)
 , _pathFinder(new RandomWaypointPathFinder())
+//, _pathFinder(new GridBasedPathFinder())
+//, _pathFinder(new VectorFieldHistogramPathFinder())
 {
     this->_pathFinder->Init(map);
 }

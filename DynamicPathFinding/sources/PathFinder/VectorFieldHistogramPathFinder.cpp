@@ -163,8 +163,8 @@ void VectorFieldHistogramPathFinder::DrawDebug(sf::RenderWindow& app) const
         unsigned int corners[4][2] =
         {
             {x -   50, y +  300},
-            {x + 8500, y +  350},
-            {x + 8450, y - 1500},
+            {x +11000, y +  350},
+            {x +10950, y - 1500},
             {x -    0, y - 1450}
         };
         

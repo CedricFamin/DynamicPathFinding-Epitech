@@ -6,6 +6,8 @@
 //
 //
 
+#include <math.h>
+
 #include "../../includes/PathFinder/RandomWaypointPathFinder.h"
 
 
@@ -29,10 +31,14 @@ void RandomWaypointPathFinder::Init(Map const * map)
     this->_goalY = goalY / Map::_MAP_SCALE;
     this->_map = map;
     this->_maxDepth = 0;
+    this->_nbNode = 0;
     // Creation du graph.
     // On part de l'avatar vers le goal
     this->_edgeMap.Init(map->GetX(), map->GetY());
     
+    this->_currentGridResolution = GRID_RESOLUTION;
+    
+    CreateGraph(map, GRID_RESOLUTION);
     // Create a waypoint at the objectif
     this->_edgeMap[this->_goalY][this->_goalX] = new node_type();
     this->_edgeMap[this->_goalY][this->_goalX]->GetData().dist = 0;
@@ -41,10 +47,6 @@ void RandomWaypointPathFinder::Init(Map const * map)
     this->CreateEdge(map, this->_edgeMap[this->_goalY][this->_goalX]);
     this->_nodeList.push_back(this->_edgeMap[this->_goalY][this->_goalX]);
     this->_nbNode++;
-    
-    this->_currentGridResolution = GRID_RESOLUTION;
-    
-    CreateGraph(map, GRID_RESOLUTION);
     //CreateEdge(map);
     this->_avatar = map->GetAvatar();
     std::cout << "Node created: " << this->_nbNode << std::endl;
@@ -116,6 +118,8 @@ RandomWaypointPathFinder::node_type * RandomWaypointPathFinder::CreateGraph(Map 
     {
         for (int x = gridResolution / 2; x < this->_edgeMap.width(); x += gridResolution)
         {
+            if (this->_edgeMap[y][x])
+                continue;
             if (!map->GetMap()[x + y * map->GetX()])
             {
                 node_type * node = new node_type;
@@ -137,94 +141,35 @@ RandomWaypointPathFinder::node_type * RandomWaypointPathFinder::CreateGraph(Map 
 }
 
 void RandomWaypointPathFinder::CreateEdge(Map const * map, node_type * nodeToConnect)
-{
-    // inefficient, can be accomplished in logN
-    node_type * node1 = nodeToConnect;
-    // pour chaque node voir si on a un chemin direct et droit vers les autres
-    // C'est tres con il faudrait plutot trianguler pour faire des path
-    // en plus y'a moyen de faire l'algo en log n
-    // la on est n*n
-    for (node_type *node2 : this->_nodeList)
+{    
+    static float const stepAngle = M_PI / (15.0f * M_PI);
+    unsigned int xPos = nodeToConnect->X();
+    unsigned int yPos = nodeToConnect->Y();
+    
+    for (float angle = 0; angle <= M_PI * 2; angle += stepAngle)
     {
-        if (node1 == node2)
-            continue;
-        node_type * n1 = node1->X() < node2->X() ? node1 : node2;
-        node_type * n2 = n1 == node2 ? node1 : node2;
-        
-        bool obstacleFound = false;
-        
-        if (n1->X() == n2->X())
+        float xDecal = cosf(angle);
+        float yDecal = sinf(angle);
+        for (unsigned int dist = 1;; dist++)
         {
-            if (n1->Y() > n2->Y())
-            {
-                n1 = n2;
-                n2 = n1 == node1 ? node2 : node1;
-            }
-            unsigned int x = n1->X();
-            for (unsigned int y = n1->Y(); y <= n2->Y() ; ++y)
-            {
-                if (x == this->_goalX && y == this->_goalY)
-                    continue;
-                else if (map->GetMap()[x + y * map->GetX()])
-                {
-                    obstacleFound = true;
-                    break;
-                }
-            }
-        }
-        else if (n1->Y() == n2->Y())
-        {
-            unsigned int y = n1->Y();
-            for (unsigned int x = n1->X(); x <= n2->X() ; ++x)
-            {
-                if (x == this->_goalX && y == this->_goalY)
-                    continue;
-                else if (map->GetMap()[x + y * map->GetX()])
-                {
-                    obstacleFound = true;
-                    break;
-                }
-            }
-        }
-        else
-        {
-            // equation de la droite passant par les deux waypoint
-            float a = (float)((int)n1->Y() - (int)n2->Y()) / (float)((int)n1->X() - (int)n2->X());
-            float b = -a * n1->X() + n1->Y();
+            unsigned int x = xDecal * dist + xPos;
+            unsigned int y = yDecal * dist + yPos;
             
-            float step = fabs(1.0f / (a * 1.1f)); // on regle les imprecision float => int en augmentant un peu le coef
-            if (step > 1.0f) step = 1.0f;
-            bool inside = false;
-            if (step != .0f)
+            if (x > map->GetX() || y >= map->GetY())
+                break;
+            if (map->GetMap()[x + y * map->GetX()])
+                break;
+            if (this->_edgeMap[y][x])
             {
-                for (float x = n1->X(); x <= n2->X(); x += step)
-                {
-                    inside = true;
-                    float y = a * x + b;
-                    
-                    if (x == this->_goalX && y == this->_goalY)
-                        continue;
-                    else if (map->GetMap()[(unsigned int)x + (unsigned int)y * map->GetX()])
-                    {
-                        obstacleFound = true;
-                        break;
-                    }
-                }
+                nodeToConnect->AddNode(this->_edgeMap[y][x]);
+                this->_edgeMap[y][x]->AddNode(nodeToConnect);
             }
-            if (!inside)
-            {
-                int i = 0;
-            }
-            
         }
         
         
-        if (!obstacleFound)
-        {
-            node1->AddNode(node2);
-            node2->AddNode(node1);
-        }
     }
+    
+    return ;
 }
 
 
@@ -257,10 +202,11 @@ RandomWaypointPathFinder::DirectionList RandomWaypointPathFinder::ComputePath()
             delete node;
         
         CreateWaypoint();
-        if (this->_waypoints.size() == 0)
+        if (this->_waypoints.size() == 0 && this->_currentGridResolution)
         {
             this->_currentGridResolution >>= 1;
             this->CreateGraph(this->_map, this->_currentGridResolution);
+            CreateEdge(this->_map, this->_edgeMap[this->_goalY][this->_goalX]);
             std::cout << "Create new waypoint : " << this->_nbNode << " resolution : " << this->_currentGridResolution << std::endl;
         }
         std::cout << "Nb Waypoint: " << this->_waypoints.size() << std::endl;

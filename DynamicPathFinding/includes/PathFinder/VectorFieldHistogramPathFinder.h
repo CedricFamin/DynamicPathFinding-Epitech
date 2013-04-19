@@ -17,7 +17,7 @@ class VectorFieldHistogramPathFinder : public IPathFinder
     typedef std::list<Direction> DirectionList;
     
     static int const ACTIVE_WINDOW_RADIUS = 10;
-    static int const POLAR_HISTOGRAM_STEP = 24;
+    static int const POLAR_HISTOGRAM_STEP = 18;
     static int const POLAR_RANGE = 360 / POLAR_HISTOGRAM_STEP;
 public:
     
